@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <v-header></v-header>
+    <v-header :seller="seller"></v-header>
     <div class="tab border-1px">
       <router-link to="/Goods" class="tab-item" tag="div">商品</router-link>
       <router-link to="/Ratings" class="tab-item" tag="div">评论</router-link>
@@ -10,10 +10,10 @@
   </div>
 </template>
 
-<script>
+<script type="text/ecmascript-6">
 import axios from 'axios'
 import vHeader from 'components/v-header/v-header'
-
+const ERR_OK = 0
 export default {
   data(){
     return{
@@ -22,7 +22,13 @@ export default {
   },
   created(){
     axios.get('/api/seller').then(response => {
-      console.log(response);
+      const {data, errno} = response.data
+
+      if(errno === ERR_OK){
+        this.seller = data
+        console.log(this.seller);
+      }
+
     })
   },
   components:{
