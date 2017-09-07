@@ -25,23 +25,35 @@
       <span class="bulletin-title"></span><span class="bulletin-text">{{seller.bulletin}}</span>
       <i class="">></i>
     </div>
+
     <div class="background">
       <img :src="seller.avatar" width="100%" height="100%">
     </div>
+    <transition name="fade">
     <div v-show="detailShow" class="detail">
       <div class="detail-wrapper clearfix">
         <div class="detail-main">
-          <p>{{seller.bulletin}}</p>
+          <h1 class="name">{{seller.name}}</h1>
+          <div class="star-warpper">
+            <star :size="48" :score="seller.score"></star>
+          </div>
+          <div class="title">
+            <div class="line"></div>
+            <div class="text">优惠信息</div>
+            <div class="line"></div>
+          </div>
         </div>
       </div>
-      <div class="detail-close">
+      <div class="detail-close" @click="detailShow = false">
         X
       </div>
     </div>
+    </transition>
   </div>
 </template>
 
 <script>
+import star from 'components/star/star'
 export default {
   props: {
     seller: {
@@ -60,6 +72,9 @@ export default {
     showDetail:function () {
       this.detailShow = true
     }
+  },
+  components:{
+    star
   }
 }
 </script>
@@ -198,15 +213,50 @@ export default {
     overflow: auto;
     top: 0;
     left: 0;
+    transition: all 0.5s ease-in-out;
     background-color: rgba(7, 17, 27, 0.8);
+    backdrop-filter: blur(10px);
+  }
+  .fade-enter-active, .fade-leave-active {
+    transition: opacity .5s
+  }
+  .fade-enter, .fade-leave-to /* .fade-leave-active in below version 2.1.8 */ {
+    opacity: 0
   }
   .detail-wrapper{
+    width: 100%;
     min-height: 100%;
-
   }
   .detail-main{
     margin-top: 64px;
     padding-bottom: 64px;
+  }
+  .detail-main .name{
+    line-height: 16px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .star-warpper{
+    text-align: center;
+    margin-top: 18px;
+    padding: 2px 0;
+  }
+  .detail-main .title{
+    display: flex;
+    width: 80%;
+    margin: 28px auto 24px auto;
+  }
+  .detail-main .title .line{
+    position: relative;
+    flex: 1;
+    top: -6px;
+    border-bottom: 1px solid rgba(255, 255, 255, .2);
+  }
+  .detail-main .title .text{
+    padding: 0 12px;
+    font-size: 14px;
+    font-weight: 700;
   }
   .detail-close{
     position: relative;
