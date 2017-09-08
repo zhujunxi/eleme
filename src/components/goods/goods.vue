@@ -1,16 +1,167 @@
 <template lang="html">
   <div class="goods">
-    goods
+    <div class="menu-wrapper" >
+      <ul>
+        <li v-for="item in goods" class="menu-item">
+          <span v-show="item.type > 0" class="icon">
+
+          </span>
+          <span class="text">
+            {{item.name}}
+          </span>
+        </li>
+      </ul>
+    </div>
+    <div class="foods-wrapper">
+      <ul>
+        <li v-for="item in goods" class="food-list">
+          <h1 class="title">{{item.name}}</h1>
+          <ul>
+            <li v-for="food in item.foods" class="food-item">
+              <div class="icon">
+                <img :src="food.icon" width="57" height="57">
+              </div>
+              <div class="content">
+                <h2 class="name">{{food.name}}</h2>
+                <p class="desc">{{food.description}}</p>
+                <div class="extra">
+                  <span class="count">月售{{food.sellCount}}</span>
+                  <span>好评率{{food.rating}}%</span>
+                </div>
+                <div class="price">
+                  <span class="now">￥{{food.price}}</span>
+                  <span class="old" v-show="food.oldPrice">￥{{food.oldPrice}}</span>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
   </div>
 </template>
 
 <script>
+import axios from 'axios'
+import BScroll from 'better-scroll'
+const ERR_OK = 0
 export default {
+  data() {
+    return {
+      goods:[]
+    };
+  },
+  props: {
+    seller: {
+      type: Object
+    }
+  },
+  created() {
+    axios.get('/api/goods').then(response => {
+      const {data, errno} = response.data
+      if(errno === ERR_OK) {
+        this.goods = data;
+        console.log(this.goods);
+      }
+
+    })
+  }
 }
 </script>
 
 <style lang="css"  scoped>
   .goods{
-
+    display: flex;
+    position: absolute;
+    top: 174px;
+    width: 100%;
+    bottom: 46px;
+    overflow: hidden;
+  }
+  .menu-wrapper{
+    flex: 0 0 80px;
+    width: 80px;
+    background-color: #F3F5F7
+  }
+  .menu-item{
+    display: table;
+    width: 56px;
+    height: 54px;
+    line-height: 14px;
+    padding: 0 12px;
+  }
+  .menu-item .text{
+    display: table-cell;
+    width: 56px;
+    vertical-align: middle;
+    font-size: 12px;
+    border-bottom: 1px solid rgba(7, 17, 27, 0.1);
+  }
+  .foods-wrapper{
+    flex: 1
+  }
+  .foods-wrapper .title{
+    padding-left: 14px;
+    height: 26px;
+    line-height: 26px;
+    border-left: 2px solid #d9dde1;
+    font-size: 14px;
+    color: rgb(147, 153, 159);
+    background: #F3F5F7;
+  }
+  .food-item{
+    display: flex;
+    margin: 18px ;
+    padding-bottom: 18px;
+    border-bottom: 1px solid rgba(7, 17, 27, 0.1);
+  }
+  .food-item:last-child{
+    border-bottom: none;
+  }
+  .food-item .icon{
+    flex:0 0 57px;
+    width: 57px;
+    height: 57px;
+    margin-right: 10px;
+  }
+  .food-item .content{
+    flex: 1;
+  }
+  .food-item .content .name{
+    margin: 2px 0 8px 0;
+    height: 14px;
+    line-height: 14px;
+    font-size: 14px;
+    color: rgb(7, 17, 27);
+  }
+  .food-item .content .desc{
+    margin: 0px 0 8px 0;
+    height: 10px;
+    line-height: 10px;
+    font-size: 10px;
+    color: rgb(147, 153, 159);
+  }
+  .food-item .content .extra{
+    height: 10px;
+    line-height: 10px;
+    font-size: 10px;
+    color: rgb(147, 153, 159);
+  }
+  .count{
+    margin-right: 12px;
+  }
+  .price{
+    font-weight: 700;
+    line-height: 24px;
+  }
+  .now{
+    margin-right: 8px;
+    font-size: 14px;
+    color: rgb(240, 20, 20);
+  }
+  .old{
+    text-decoration: line-through;
+    font-size: 10px;
+    color: rgb(147, 153, 159);
   }
 </style>
