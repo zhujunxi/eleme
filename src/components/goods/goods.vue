@@ -1,20 +1,23 @@
 <template lang="html">
   <div class="goods">
-    <div class="menu-wrapper" >
+    <div class="menu-wrapper" ref="menuWrapper">
       <ul>
-        <li v-for="item in goods" class="menu-item">
-          <span v-show="item.type > 0" class="icon">
-
-          </span>
+        <li
+          v-for="(item, index) in goods"
+          class="menu-item"
+          :class="currentIndex == index ?'active':''"
+          @click="selectMenu(index, $event)"
+          >
+          <span v-show="item.type > 0" class="icon"></span>
           <span class="text">
             {{item.name}}
           </span>
         </li>
       </ul>
     </div>
-    <div class="foods-wrapper">
+    <div class="foods-wrapper" ref="foodsWrapper">
       <ul>
-        <li v-for="item in goods" class="food-list">
+        <li v-for="item in goods" class="food-list food-list-hook">
           <h1 class="title">{{item.name}}</h1>
           <ul>
             <li v-for="food in item.foods" class="food-item">
@@ -29,8 +32,10 @@
                   <span>好评率{{food.rating}}%</span>
                 </div>
                 <div class="price">
-                  <span class="now">￥{{food.price}}</span>
-                  <span class="old" v-show="food.oldPrice">￥{{food.oldPrice}}</span>
+                  <span class="now">￥{{food.price}}</span><span class="old" v-show="food.oldPrice">￥{{food.oldPrice}}</span>
+                </div>
+                <div class="cartcontrol-wrapper">
+                  <cartcontrol :food="food"></cartcontrol>
                 </div>
               </div>
             </li>
@@ -38,17 +43,27 @@
         </li>
       </ul>
     </div>
+
+    <shopcart
+      :delivery-price="seller.deliveryPrice"
+      :min-price="seller.minPrice"
+      :select-foods="selectFoods"
+      ></shopcart>
   </div>
 </template>
 
 <script>
 import axios from 'axios'
 import BScroll from 'better-scroll'
+import shopcart from 'components/shopcart/shopcart'
+import cartcontrol from 'components/cartcontrol/cartcontrol'
 const ERR_OK = 0
 export default {
   data() {
     return {
-      goods:[]
+      goods:[],
+      listHeight:[],
+      scrollY: 0
     };
   },
   props: {
@@ -57,14 +72,80 @@ export default {
     }
   },
   created() {
+    var self = this;
     axios.get('/api/goods').then(response => {
       const {data, errno} = response.data
       if(errno === ERR_OK) {
         this.goods = data;
-        console.log(this.goods);
-      }
+        this.$nextTick(function () {
+          this._initScroll()
+          this._calcHeight()
+        })
 
+        //console.log(this.goods);
+      }
     })
+
+  },
+  methods: {
+    _initScroll() {
+      this.menuScroll = new BScroll(this.$refs.menuWrapper, {
+        click:true
+      });
+      this.foodsScroll = new BScroll(this.$refs.foodsWrapper, {
+        probeType: 3,
+        click:true
+      });
+
+      this.foodsScroll.on('scroll',(pos) => {
+        this.scrollY = Math.abs(Math.round(pos.y))
+      })
+    },
+    _calcHeight() {
+      let foodList = this.$refs.foodsWrapper.getElementsByClassName('food-list-hook');
+      let height = 0;
+      this.listHeight.push(height);
+      for (let i=0;i<foodList.length;i++) {
+        let item = foodList[i];
+        height += item.clientHeight;
+        this.listHeight.push(height);
+      }
+    },
+    selectMenu(index, event) {
+      if(!event._constructed){
+        return
+      }
+      let foodList = this.$refs.foodsWrapper.getElementsByClassName('food-list-hook');
+      let el = foodList[index]
+
+      this.foodsScroll.scrollToElement(el,300)
+    }
+  },
+  computed: {
+    currentIndex() {
+      for(let i=0;i<this.listHeight.length;i++) {
+        let height = this.listHeight[i];
+        let height2 = this.listHeight[i+1];
+        if( !height2 || (this.scrollY >= height && this.scrollY < height2)) {
+          return i;
+        }
+      }
+      return 0;
+    },
+    selectFoods() {
+      let foods = [];
+      this.goods.forEach((good) => {
+        good.foods.forEach((food) => {
+          if(food.count) {
+            foods.push(food)
+          }
+        })
+      })
+      return foods
+    }
+  },
+  components: {
+    shopcart, cartcontrol
   }
 }
 </script>
@@ -89,6 +170,16 @@ export default {
     height: 54px;
     line-height: 14px;
     padding: 0 12px;
+  }
+  .menu-item.active{
+    font-weight: 700;
+    background-color: #FFF;
+    position: relative;
+    z-index: 10;
+    margin-top: -1px;
+  }
+  .menu-item.active .text{
+    border: none;
   }
   .menu-item .text{
     display: table-cell;
@@ -126,6 +217,7 @@ export default {
   }
   .food-item .content{
     flex: 1;
+    position: relative;
   }
   .food-item .content .name{
     margin: 2px 0 8px 0;
@@ -136,8 +228,8 @@ export default {
   }
   .food-item .content .desc{
     margin: 0px 0 8px 0;
-    height: 10px;
-    line-height: 10px;
+    //height: 10px;
+    line-height: 12px;
     font-size: 10px;
     color: rgb(147, 153, 159);
   }
@@ -163,5 +255,11 @@ export default {
     text-decoration: line-through;
     font-size: 10px;
     color: rgb(147, 153, 159);
+  }
+  .cartcontrol-wrapper{
+    position: absolute;
+    right: 0;
+    bottom: 0px;
+    display: block;
   }
 </style>
