@@ -41,6 +41,7 @@ export default {
 @import "../static/css/reset.css";
   .tab{
     display: flex;
+    display: -webkit-flex;
     width: 100%;
     height: 40px;
     line-height: 40px;
