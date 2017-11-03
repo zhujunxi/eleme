@@ -6,11 +6,14 @@ import Seller from 'components/seller/seller'
 
 Vue.use(Router)
 
-export default new Router({
+var router = new Router({
   routes: [
     {path: '/',redirect:'/Goods'},
     {path: '/Goods',component: Goods},
     {path: '/Ratings',component: Ratings},
     {path: '/Seller',component: Seller},
-  ]
+  ],
+  linkActiveClass:'active'
 })
+
+export default router
